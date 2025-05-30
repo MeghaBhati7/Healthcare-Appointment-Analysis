@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS appointments
     -- They ensure that 'clinic_id' here actually points to an existing clinic, and so on.
     CONSTRAINT appointments_clinic_id_fkey FOREIGN KEY (clinic_id)
         REFERENCES clinics (clinic_id)       -- This means 'clinic_id' in THIS table must match an 'clinic_id' in the 'clinics' table.
-        ON UPDATE CASCADE                    -- If a clinic's ID changes in 'clinics', it automatically updates here too.
-        ON DELETE CASCADE,                   -- If a clinic is deleted from 'clinics', all its appointments here are also deleted.
+        ON UPDATE CASCADE                    
+        ON DELETE CASCADE,                   
 
     CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id)
         REFERENCES doctors (doctor_id)       -- Links to the 'doctors' table.
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS appointments
 );
 
 -- =================================================================================================
--- STEP 3: INSERT DATA (Filling your tables with information)
+-- STEP 2: INSERT DATA (Filling your tables with information)
 -- Just like creating tables, inserting data into parent tables must happen BEFORE child tables.
 -- This ensures that when you insert an appointment, the clinic, doctor, and patient it refers to already exist.
 -- =================================================================================================
@@ -112,7 +112,7 @@ INSERT INTO clinics (clinic_id, clinic_name) VALUES
 (7, 'Gastroenterology'),
 (8, 'Pediatric Wellness'),
 (9, 'Eye centre'),
-(10, 'Hair care solutions'); -- No comma after the last set of values
+(10, 'Hair care solutions');
 
 SELECT * FROM doctors;
 
@@ -142,12 +142,12 @@ INSERT INTO patients (patient_id, patient_first_name, patient_last_name, phone_n
 INSERT INTO patients (patient_id, patient_first_name, patient_last_name, phone_number, gender) VALUES (10, 'Vank', 'Ollo', '413-329-485', 'MALE');
 
 -- ----------------------------------Funds Data----------------------------------------------
--- IMPORTANT: Corrected 'financial_data' to 'funds' to match your CREATE TABLE name.
+
 INSERT INTO funds (fd_id, amount) VALUES (11, 2000);
 INSERT INTO funds (fd_id, amount) VALUES (22, 6000);
 
 -- -------------------Appointments Data-----------------------------------
--- This data can be inserted last, as all its referenced IDs (clinic, doctor, patient) now exist.
+
 INSERT INTO appointments (appointment_id, appointment_date, appointment_time, arrival_time, completed_time, clinic_id, doctor_id, patient_id) VALUES (511, '2024-01-01', '08:00:00', '08:00:00', '09:00:00', 2, 200, 1);
 INSERT INTO appointments (appointment_id, appointment_date, appointment_time, arrival_time, completed_time, clinic_id, doctor_id, patient_id) VALUES (512, '2024-01-01', '09:00:00', '09:30:00', '10:00:00', 3, 400, 2);
 INSERT INTO appointments (appointment_id, appointment_date, appointment_time, arrival_time, completed_time, clinic_id, doctor_id, patient_id) VALUES (513, '2024-01-01', '08:00:00', '08:00:00', '09:00:00', 2, 200, 4);
@@ -260,7 +260,7 @@ ORDER BY
     number_of_late_or_long_appointments DESC; -- Then by number of occurrences if percentages are equal    
     
     
-   -- 3. Doctor Performance Report (MySQL Version - Corrected for ONLY_FULL_GROUP_BY)
+   -- 3. Doctor Performance Report 
 -- Question: For each doctor, calculate:
 --   - Total number of appointments
 --   - Average appointment duration (from arrival to completed time)
@@ -309,7 +309,7 @@ ORDER BY
     patients_seen_more_than_once DESC,
     total_appointments DESC;
     
-    -- 4. Clinic Load by Weekday (MySQL Version)
+    -- 4. Clinic Load by Weekday 
 -- Question: Find out which weekday (Monday–Sunday) is the busiest for each clinic in terms of number of appointments.
 -- Return clinic name, weekday, and appointment count.
 
@@ -352,7 +352,7 @@ ORDER BY
     busiest_appointment_count DESC; -- Then by the busiest count (in case a clinic has multiple weekdays with the same max count).
     
     
-    -- 5. Repeat Patient Frequency (MySQL Version)
+    -- 5. Repeat Patient Frequency 
 -- Question: Find the top 5 patients with the highest number of appointments and display their full name and total appointment count.
 -- Include a column to indicate if they are “Frequent” (more than 10 appointments) or “Occasional” (10 or fewer).
 
@@ -384,7 +384,7 @@ ORDER BY
     total_appointment_count DESC -- Order by the highest appointment count first.
 LIMIT 5; -- Restrict the results to only the top 5 patients.
 
--- 6. Time Window Utilization (MySQL Version)
+-- 6. Time Window Utilization 
 -- Question: Group appointments into 3 time windows:
 --   Morning (before 12:00 PM)
 --   Afternoon (12:00 PM–5:00 PM)
@@ -396,7 +396,6 @@ WITH AppointmentTimeWindows AS (
     SELECT
         clinic_id,
         appointment_id, -- Keep this column to count appointments later.
-        -- Corrected CASE statement logic for time windows:
         CASE
             WHEN appointment_time < '12:00:00' THEN 'Morning' -- Appointments before 12:00 PM (noon).
             WHEN appointment_time >= '12:00:00' AND appointment_time <= '17:00:00' THEN 'Afternoon' -- Appointments from 12:00 PM (noon) up to and including 5:00 PM (17:00:00).
@@ -421,7 +420,7 @@ ORDER BY
     FIELD(atw.time_window, 'Morning', 'Afternoon', 'Evening'); -- Then, order the time windows logically (Morning, Afternoon, Evening)
     -- FIELD() is a MySQL-specific function that allows you to sort by a custom list of string values.
     
-   -- 7. Monthly Trends by Clinic (MySQL Version - Meticulously Cleaned)
+   -- 7. Monthly Trends by Clinic 
 -- Question: Using a CTE, show the monthly appointment count trend for each clinic for the past year.
 -- Return columns: clinic_name, year_month, appointment_count.
 
