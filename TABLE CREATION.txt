@@ -1,0 +1,97 @@
+- STEP 1: TABLE CREATION 
+
+=================================================================================================
+
+USE clinic_data;
+
+DROP TABLE IF EXISTS appointments; -- Appointments depends on clinics, doctors, patients
+DROP TABLE IF EXISTS funds;        -- Funds doesn't depend on others, can be dropped any time
+DROP TABLE IF EXISTS clinics;      -- Clinics is a parent table
+DROP TABLE IF EXISTS doctors;      -- Doctors is a parent table
+DROP TABLE IF EXISTS patients;     -- Patients is a parent table
+SHOW tables;
+
+CREATE TABLE IF NOT EXISTS clinics
+(
+   clinic_id INT NOT NULL AUTO_INCREMENT,                                         
+   clinic_name VARCHAR(25),
+   CONSTRAINT clinic_pkey PRIMARY KEY(clinic_id)
+);
+
+-- Table: doctors (Parent Table)
+-- Stores information about doctors.
+-- Unique ID for each doctor, automatically generated.
+-- Doctor's first name, cannot be empty.
+-- Doctor's last name, cannot be empty.
+-- Sets 'doctor_id' as the primary key.
+
+CREATE TABLE IF NOT EXISTS doctors
+(
+    doctor_id INT NOT NULL AUTO_INCREMENT, 
+    first_name VARCHAR(50) NOT NULL,       
+    last_name VARCHAR(50) NOT NULL,        
+    CONSTRAINT doctors_pkey PRIMARY KEY (doctor_id) 
+    );
+
+-- Table: patients (Parent Table)
+-- Stores information about patients.
+-- Unique ID for each patient, automatically generated.
+              -- Patient's first name.
+     -- Patient's last name, cannot be empty.
+                -- Patient's phone number.
+                      -- Patient's gender.
+
+
+CREATE TABLE IF NOT EXISTS patients
+(
+    patient_id INT NOT NULL AUTO_INCREMENT, 
+    patient_first_name VARCHAR(20),          
+    patient_last_name VARCHAR(25) NOT NULL,  -- Patient's last name, cannot be empty.
+    phone_number VARCHAR(20),                -- Patient's phone number.
+    gender VARCHAR(20),                      -- Patient's gender.
+    CONSTRAINT patients_pkey PRIMARY KEY (patient_id) -- Sets 'patient_id' as the primary key.
+);
+
+-- Table: funds (Independent Table)
+-- Stores financial data (e.g., specific fund amounts).
+-- This table doesn't link to others, so its creation order isn't critical, but it's good to keep it with other parent-like tables.
+CREATE TABLE IF NOT EXISTS funds (
+    fd_id INT NOT NULL,                     -- Unique ID for the fund entry.
+    amount INT NOT NULL,                    -- The amount of funds, cannot be empty.
+    CONSTRAINT funds_pkey PRIMARY KEY (fd_id) -- Sets 'fd_id' as the primary key.
+);
+
+
+-- Table: appointments (Child Table)
+-- Stores details about patient appointments.
+-- This table is a 'child' because it links to 'clinics', 'doctors', and 'patients'.
+-- Therefore, it must be created AFTER those tables.
+CREATE TABLE IF NOT EXISTS appointments
+(
+    appointment_id INT NOT NULL AUTO_INCREMENT, -- Unique ID for each appointment, automatically generated.
+    appointment_date DATE NOT NULL,             -- The date of the appointment.
+    appointment_time TIME NOT NULL,             -- The scheduled time of the appointment.
+    arrival_time TIME NOT NULL,                 -- The actual arrival time of the patient.
+    completed_time TIME NOT NULL,               -- The time the appointment was completed.
+    clinic_id INT,                              -- Links to 'clinics.clinic_id' (Foreign Key)
+    doctor_id INT,                              -- Links to 'doctors.doctor_id' (Foreign Key)
+    patient_id INT,                             -- Links to 'patients.patient_id' (Foreign Key)
+    CONSTRAINT appointments_pkey PRIMARY KEY (appointment_id), -- Sets 'appointment_id' as the primary key.
+
+    -- FOREIGN KEY CONSTRAINTS: These are the "links" that connect this table to others.
+    -- They ensure that 'clinic_id' here actually points to an existing clinic, and so on.
+    CONSTRAINT appointments_clinic_id_fkey FOREIGN KEY (clinic_id)
+        REFERENCES clinics (clinic_id)       -- This means 'clinic_id' in THIS table must match an 'clinic_id' in the 'clinics' table.
+        ON UPDATE CASCADE                    -- If a clinic's ID changes in 'clinics', it automatically updates here too.
+        ON DELETE CASCADE,                   -- If a clinic is deleted from 'clinics', all its appointments here are also deleted.
+
+    CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id)
+        REFERENCES doctors (doctor_id)       -- Links to the 'doctors' table.
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+
+    CONSTRAINT appointments_patient_id_fkey FOREIGN KEY (patient_id)
+        REFERENCES patients (patient_id)     -- Links to the 'patients' table.
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
